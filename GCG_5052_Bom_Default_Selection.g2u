@@ -1,0 +1,87 @@
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare(String,"")
+	
+	F.Intrinsic.Control.If(V.Caller.Hook,=,50313)
+		
+		'process bdf
+		F.Intrinsic.Control.CallSub(Process_BDF)
+		
+	F.Intrinsic.Control.EndIf
+	
+	'end program
+	F.Intrinsic.Control.CallSub(Exit)
+		
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5052_Bom_Default_Selection.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.CallSub(Exit)
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.Main.End
+
+Program.Sub.Exit.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+
+	'checking if connection is open
+'	F.Intrinsic.Control.If(v.ODBC.connection!conx.Exists)
+'		F.ODBC.Connection!Con.Close
+'	F.Intrinsic.Control.EndIf
+	
+	F.Intrinsic.Control.End
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5052_Bom_Default_Selection.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.Exit.End
+
+Program.Sub.Process_BDF.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String,"")
+	v.Local.sRow.Declare
+	v.Local.sBDFSplit.Declare
+	V.Local.i.Declare(Long,0)
+	v.Local.iRow.Declare
+	v.Local.iEnd.Declare
+	
+
+f.Intrinsic.BDF.Load("Main-PreDisplayData-bdf","Main-PreDisplayData-bdf")
+f.Intrinsic.BDF.ReadRowCount("Main-PreDisplayData-bdf",v.Local.i)
+f.Intrinsic.Math.Sub(v.Local.i,1,v.Local.iEnd)
+f.Intrinsic.BDF.Clone("Main-PreDisplayData-bdf","BDFClone")
+
+f.Intrinsic.Control.For(v.Local.iRow,0,v.Local.iEnd,1)
+f.Intrinsic.BDF.ReadRowCount("Main-PreDisplayData-bdf",v.Local.i)
+f.Intrinsic.BDF.ReadRow("Main-PreDisplayData-bdf",v.Local.iRow,v.Local.sRow)
+f.Intrinsic.String.Split(v.Local.sRow,"|~|",v.Local.sBDFSplit)
+f.Intrinsic.Control.If(v.Local.sBDFSplit(2).Trim,=,"")
+	f.Intrinsic.String.Replace(v.Local.sRow,"False","True",v.Local.sRow)
+f.Intrinsic.Control.EndIf
+f.Intrinsic.BDF.WriteRow("BDFClone",v.Local.sRow)
+f.Intrinsic.Control.Next(v.Local.iRow)
+
+f.Intrinsic.BDF.Save("BDFClone","Main-PreDisplayData-bdf")
+	
+	F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+		F.Intrinsic.String.Build("Project: {0}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}","GCG_5052_Bom_Default_Selection.g2u",V.Ambient.NewLine,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Local.sError)
+		F.Intrinsic.UI.Msgbox(V.Local.sError)
+		F.Intrinsic.Control.End
+	F.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.EndTry
+Program.Sub.Process_BDF.End
